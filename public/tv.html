@@ -2,233 +2,109 @@
 <html lang="fi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bluffi & Fakta - TV</title>
     <style>
-        :root {
-            --bg-color: #0d0118;
-            --text-color: #ffffff;
-            --primary-color: #00d4ff;
-            --neon-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
-        }
-
+        :root { --bg: #0d0118; --main: #00d4ff; --pink: #ff00e6; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
+        
+        header { flex: 0 0 auto; padding: 20px; text-align: center; }
+        h1 { font-size: 8vh; text-transform: uppercase; color: #fff; text-shadow: 0 0 20px var(--pink); }
 
-        body {
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* --- YLÄOSA --- */
-        header {
-            flex: 0 0 auto;
-            padding: 2vh 0;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 7vh;
-            text-transform: uppercase;
-            color: #fff;
-            text-shadow: 0 0 10px #ff00e6, 0 0 20px #ff00e6;
-        }
-
-        /* --- KESKIOSA --- */
-        main {
-            flex: 1 1 auto;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0 5vw;
-        }
-
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 100%;
-        }
-
+        main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 0 5vw; }
+        .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         .screen.active { display: flex; }
 
-        .lobby-container {
-            display: flex;
-            gap: 3vw;
-            width: 100%;
-            justify-content: center;
-        }
+        /* Asettelu: Ohjeet vasemmalla, Koodi oikealla */
+        .lobby-layout { display: flex; gap: 40px; width: 100%; align-items: center; }
+        .guide-card { flex: 1.2; background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 3px solid var(--main); }
+        .code-card { flex: 1; text-align: center; }
 
-        .instructions-box {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 3vh;
-            border-radius: 15px;
-            text-align: left;
-            border: 2px solid var(--primary-color);
-        }
+        #pin-display { font-size: 12vh; color: var(--main); text-shadow: 0 0 20px var(--main); margin: 10px 0; }
 
-        .instructions-box h2 { color: var(--primary-color); font-size: 4vh; margin-bottom: 2vh; }
-        .instructions-box li { font-size: 2.5vh; margin-bottom: 1vh; }
+        /* ALAOSA JA ALOITUSNAPPI */
+        footer { flex: 0 0 auto; min-height: 25vh; background: rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 3px solid var(--pink); padding: 20px; }
+        
+        #player-list { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 20px; }
+        .player-badge { background: rgba(0, 212, 255, 0.2); padding: 10px 25px; border-radius: 50px; border: 1px solid var(--main); font-size: 3vh; }
 
-        #room-code-display {
-            font-size: 12vh;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-shadow: var(--neon-shadow);
+        #start-btn { 
+            display: none; background: var(--pink); color: white; border: none; 
+            padding: 25px 80px; font-size: 6vh; border-radius: 100px; cursor: pointer;
+            box-shadow: 0 0 30px var(--pink); font-weight: bold; text-transform: uppercase;
+            animation: pulse 1.5s infinite;
         }
-
-        /* Vastaukset ja tulokset */
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2vh;
-            width: 80%;
-        }
-
-        .option-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 3vh;
-            border-radius: 10px;
-            font-size: 3vh;
-        }
-
-        /* --- ALAOSA --- */
-        footer {
-            flex: 0 0 auto;
-            width: 100%;
-            padding: 2vh 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(0,0,0,0.3);
-        }
-
-        #player-list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1vw;
-            margin-bottom: 2vh;
-        }
-
-        .player-tag {
-            background: rgba(0, 212, 255, 0.2);
-            padding: 1vh 2vw;
-            border-radius: 20px;
-            font-size: 2vh;
-            border: 1px solid var(--primary-color);
-        }
-
-        button {
-            background: linear-gradient(45deg, #ff00e6, #00d4ff);
-            color: white;
-            border: none;
-            padding: 2vh 5vw;
-            font-size: 3vh;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Sinun pyytämäsi linkki-lisäys */
-        .tv-link-box {
-            margin-top: 2vh;
-            border-top: 1px solid #444;
-            padding-top: 1vh;
-            text-align: center;
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); box-shadow: 0 0 50px var(--pink); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>BLUFFI & FAKTA</h1>
-    </header>
+    <header><h1>BLUFFI & FAKTA</h1></header>
 
     <main>
         <div id="lobby-screen" class="screen active">
-            <div class="lobby-container">
-                <div class="instructions-box">
-                    <h2>NÄIN PELATAAN:</h2>
-                    <ol>
-                        <li>Avaa selaimesi puhelimella.</li>
-                        <li>Syötä TV:ssä näkyvä koodi.</li>
-                        <li>Keksi uskottava <strong>VALHE</strong>.</li>
-                        <li>Äänestä! Löydätkö <strong>FAKTAN</strong>?</li>
-                    </ol>
-                    <div class="tv-link-box">
-                        <p style="font-size: 1.5vh; color: #aaa;">Pelaatko kavereiden kanssa?</p>
-                        <a href="tv.html" style="color: #00d4ff; text-decoration: none; font-weight: bold; font-size: 2vh;">👉 AVAA TV-RUUTU TÄSTÄ</a>
-                    </div>
+            <div class="lobby-layout">
+                <div class="guide-card">
+                    <h2 style="color: var(--main); font-size: 5vh; margin-bottom: 20px;">NÄIN PELATAAN:</h2>
+                    <ul style="font-size: 3.5vh; list-style: none; line-height: 1.4;">
+                        <li>📱 1. Ota puhelimesi käteen</li>
+                        <li>🌐 2. Mene: <strong>bluffi-peli.onrender.com</strong></li>
+                        <li>🔑 3. Syötä PIN-koodi ja nimesi</li>
+                        <li>🤥 4. Keksi valheita ja voita!</li>
+                    </ul>
                 </div>
-                
-                <div style="flex: 1;">
-                    <p style="font-size: 3vh;">Liity koodilla:</p>
-                    <div id="room-code-display">----</div>
-                    <p style="font-size: 2vh; color: #00d4ff;">Odota, että kaikki ovat mukana...</p>
+                <div class="code-card">
+                    <p style="font-size: 4vh;">LIITY PIN-KOODILLA:</p>
+                    <div id="pin-display">----</div>
+                    <p style="font-size: 3vh; color: #aaa;">Odotetaan pelaajia...</p>
                 </div>
             </div>
         </div>
 
         <div id="game-screen" class="screen">
-            <h2 id="question-display" style="font-size: 6vh; margin-bottom: 4vh;">KYSYMYS TÄHÄN</h2>
-            <p style="font-size: 3vh; color: var(--primary-color);">Vastatkaa puhelimillanne...</p>
-            <div id="submitted-players" style="margin-top: 2vh; font-size: 2vh; opacity: 0.7;"></div>
+            <h2 id="q-text" style="font-size: 7vh; text-align: center;"></h2>
         </div>
 
         <div id="voting-screen" class="screen">
-            <h2 style="font-size: 5vh; margin-bottom: 4vh;">MIKÄ ON TOTTA?</h2>
-            <div id="options-display" class="options-grid"></div>
+            <h2 style="font-size: 6vh; margin-bottom: 30px;">VALITSE OIKEA!</h2>
+            <div id="options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 90%;"></div>
         </div>
 
         <div id="results-screen" class="screen">
-            <h2 id="correct-answer-display" style="font-size: 5vh; color: #00ff88; margin-bottom: 3vh;"></h2>
-            <div id="scoreboard" style="width: 60%; font-size: 3vh;"></div>
+            <h2 id="answer-reveal" style="font-size: 5vh; color: #00ff88;"></h2>
+            <div id="score-table" style="margin-top: 30px; font-size: 4vh; width: 100%;"></div>
         </div>
     </main>
 
     <footer>
         <div id="player-list"></div>
-        <button id="start-btn" style="display:none;">ALOITA SHOW</button>
+        <button id="start-btn">ALOITA PELI 🚀</button>
     </footer>
 
     <script>
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const ws = new WebSocket(`${protocol}://${window.location.host}`);
-        let myRoom = null;
 
-        ws.onopen = () => {
-            ws.send(JSON.stringify({ type: 'CREATE_GAME' }));
-        };
+        ws.onopen = () => ws.send(JSON.stringify({ type: 'CREATE_GAME' }));
 
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            const { type, payload } = data;
-
+            const { type, payload } = JSON.parse(event.data);
+            
             if (type === 'GAME_CREATED') {
-                myRoom = payload.roomCode;
-                document.getElementById('room-code-display').innerText = myRoom;
+                document.getElementById('pin-display').innerText = payload.roomCode;
             }
-
+            
             if (type === 'PLAYER_JOINED') {
                 const list = document.getElementById('player-list');
                 list.innerHTML = '';
                 payload.players.forEach(p => {
                     const div = document.createElement('div');
-                    div.className = 'player-tag';
+                    div.className = 'player-badge';
                     div.innerText = p.name;
                     list.appendChild(div);
                 });
-                document.getElementById('player-count').innerText = payload.players.length;
+                // Nappi näkyviin heti kun vähintään 1 pelaaja on mukana
                 if (payload.players.length >= 1) {
                     document.getElementById('start-btn').style.display = 'block';
                 }
@@ -236,56 +112,42 @@
 
             if (type === 'GAME_STARTED') {
                 showScreen('game-screen');
-                document.getElementById('question-display').innerText = payload.question;
-                document.getElementById('submitted-players').innerHTML = '';
-            }
-
-            if (type === 'PLAYER_SUBMITTED') {
-                const div = document.getElementById('submitted-players');
-                div.innerHTML += ` ✅ ${payload.playerName} `;
+                document.getElementById('q-text').innerText = payload.question;
             }
 
             if (type === 'SHOW_ANSWERS') {
                 showScreen('voting-screen');
-                const grid = document.getElementById('options-display');
+                const grid = document.getElementById('options-grid');
                 grid.innerHTML = '';
-                payload.answers.forEach(ans => {
-                    const div = document.createElement('div');
-                    div.className = 'option-card';
-                    div.innerText = ans;
-                    grid.appendChild(div);
+                payload.answers.forEach(a => {
+                    const d = document.createElement('div');
+                    d.style.background = "rgba(255,255,255,0.1)";
+                    d.style.padding = "30px";
+                    d.style.borderRadius = "15px";
+                    d.style.fontSize = "3.5vh";
+                    d.innerText = a;
+                    grid.appendChild(d);
                 });
             }
 
             if (type === 'GAME_RESULTS') {
                 showScreen('results-screen');
-                document.getElementById('correct-answer-display').innerText = "OIKEA VASTAUS: " + payload.correctAnswer;
-                const board = document.getElementById('scoreboard');
-                board.innerHTML = '<h3>TILANNE:</h3>';
-                payload.results.sort((a,b) => b.score - a.score).forEach(r => {
-                    board.innerHTML += `<p>${r.name}: ${r.score} p (+${r.roundPoints})</p>`;
-                });
+                document.getElementById('answer-reveal').innerText = "OIKEA VASTAUS: " + payload.correctAnswer;
+                const sb = document.getElementById('score-table');
+                sb.innerHTML = '<h3>TILANNE:</h3>' + 
+                    payload.results.map(r => `<p>${r.name}: ${r.score} pistettä</p>`).join('');
             }
+        };
 
-            if (type === 'FINAL_RESULTS') {
-                showScreen('results-screen');
-                const board = document.getElementById('scoreboard');
-                board.innerHTML = '<h2>PELI PÄÄTTYI!</h2>';
-                payload.results.forEach((r, i) => {
-                    board.innerHTML += `<p>${i+1}. ${r.name} - ${r.score} pistettä</p>`;
-                });
-            }
+        document.getElementById('start-btn').onclick = () => {
+            ws.send(JSON.stringify({ type: 'START_GAME' }));
+            document.getElementById('start-btn').style.display = 'none';
         };
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
-
-        document.getElementById('start-btn').onclick = () => {
-            ws.send(JSON.stringify({ type: 'START_GAME' }));
-            document.getElementById('start-btn').style.display = 'none';
-        };
     </script>
 </body>
 </html>
