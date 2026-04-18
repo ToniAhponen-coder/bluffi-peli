@@ -3,47 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bluffi & Fakta - Ohjain</title>
+    <title>Bluffi - Ohjain</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0d0118; color: white; text-align: center; padding: 20px; margin: 0; }
         .screen { display: none; }
         .active { display: block; }
-        
-        /* Ohjeet isännälle */
-        .host-guide {
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid #00d4ff;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        input { 
-            width: 100%; max-width: 300px; padding: 15px; margin: 10px 0; 
-            border-radius: 8px; border: 2px solid #333; background: #1a1a2e; color: white; font-size: 1rem;
-        }
-        
-        button { 
-            width: 100%; max-width: 300px; padding: 15px; background: #00d4ff; 
-            border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; color: #000;
-        }
-
-        .error { color: #ff0055; font-size: 0.9rem; margin-top: 10px; min-height: 1.2em; }
+        .host-guide { background: rgba(0, 212, 255, 0.1); border: 1px solid #00d4ff; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: left; }
+        input { width: 100%; max-width: 300px; padding: 15px; margin: 10px 0; border-radius: 8px; border: 2px solid #333; background: #1a1a2e; color: white; font-size: 1rem; }
+        button { width: 100%; max-width: 300px; padding: 15px; background: #00d4ff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; color: #000; margin-top: 10px; }
+        .option-btn { background: #333; color: white; border: 1px solid #00d4ff; margin: 8px 0; }
+        .error { color: #ff0055; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
-
     <div id="join-screen" class="screen active">
         <h1>BLUFFI & FAKTA 🎭</h1>
-        
         <div class="host-guide">
-            <p style="margin: 0 0 8px 0; font-weight: bold; color: #00d4ff;">Oletko pelin isäntä?</p>
-            <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: #ccc;">Avaa päänäyttö TV:n selaimella:</p>
-            <code style="display: block; background: #000; padding: 8px; border-radius: 4px; color: #fff; font-size: 0.8rem; border: 1px solid #444;">bluffi-peli.onrender.com/tv.html</code>
+            <p style="margin:0; font-weight:bold; color:#00d4ff;">Oletko isäntä?</p>
+            <p style="margin:5px 0; font-size:0.8rem; color:#ccc;">Avaa TV:n selaimella:</p>
+            <code style="display:block; background:#000; padding:8px; color:#fff; font-size:0.75rem;">bluffi-peli.onrender.com/tv.html</code>
         </div>
-
-        <p style="margin-bottom: 10px; font-size: 0.9rem;">Liity peliin alta:</p>
         <input type="number" id="room-input" placeholder="PIN-KOODI" inputmode="numeric">
         <input type="text" id="name-input" placeholder="NIMIMERKKI" maxlength="12">
         <button id="join-btn">LIITY PELIIN</button>
@@ -52,12 +31,12 @@
 
     <div id="game-screen" class="screen">
         <h2 id="question-text">Odota kysymystä...</h2>
-        <input type="text" id="answer-input" placeholder="Kirjoita valheesi tähän..." maxlength="60">
+        <input type="text" id="answer-input" placeholder="Kirjoita valheesi..." maxlength="60">
         <button id="submit-btn">LÄHETÄ BLUFFI</button>
     </div>
 
     <div id="voting-screen" class="screen">
-        <h3>VALITSE OIKEA VASTAUS!</h3>
+        <h3>MIKÄ ON TOTTA?</h3>
         <div id="options-list"></div>
     </div>
 
@@ -68,39 +47,30 @@
     <script>
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const ws = new WebSocket(`${protocol}://${window.location.host}`);
-
-        // TIETOTURVA: Puhdistetaan syötteet kaikesta HTML-koodista
         const safe = (str) => str.replace(/[^a-zA-Z0-9åäöÅÄÖ!?,. ]/g, "").trim();
 
         document.getElementById('join-btn').onclick = () => {
             const room = document.getElementById('room-input').value;
             const name = safe(document.getElementById('name-input').value);
-            if(room && name) {
-                ws.send(JSON.stringify({ type: 'JOIN_GAME', payload: { roomCode: room, name: name } }));
-            } else {
-                document.getElementById('join-error').innerText = "Täytä koodi ja nimi!";
-            }
+            if(room && name) ws.send(JSON.stringify({ type: 'JOIN_GAME', payload: { roomCode: room, name: name } }));
         };
 
         ws.onmessage = (event) => {
             const { type, payload } = JSON.parse(event.data);
             if (type === 'JOIN_SUCCESS') showScreen('wait-screen');
             if (type === 'ERROR') document.getElementById('join-error').innerText = payload;
-            
             if (type === 'GAME_STARTED') {
                 showScreen('game-screen');
                 document.getElementById('question-text').innerText = payload.question;
-                document.getElementById('answer-input').value = '';
             }
-            
             if (type === 'SHOW_ANSWERS') {
                 showScreen('voting-screen');
                 const list = document.getElementById('options-list');
                 list.innerHTML = '';
                 payload.answers.forEach(ans => {
                     const btn = document.createElement('button');
+                    btn.className = 'option-btn';
                     btn.innerText = ans;
-                    btn.style.margin = "8px 0";
                     btn.onclick = () => {
                         ws.send(JSON.stringify({ type: 'SUBMIT_VOTE', payload: { vote: ans } }));
                         showScreen('wait-screen');
