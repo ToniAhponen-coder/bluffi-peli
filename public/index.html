@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ohjain - Bluffi & Fakta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff0055">
+
+    <style>
+        :root {
+            --neon-pink: #ff0055;
+            --neon-blue: #00d2ff;
+            --dark-bg: #0a0a1a;
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--dark-bg);
+            color: #fff; 
+            text-align: center; 
+            padding: 20px; 
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* NEON LOGO PUHELIMESSA */
+        .game-logo-mobile {
+            font-family: 'Bungee', cursive;
+            font-size: 32px;
+            margin: 20px 0;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px var(--neon-pink),
+                0 0 20px var(--neon-pink);
+            line-height: 1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-sizing: border-box;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            margin: 10px 0; 
+            font-size: 18px; 
+            border-radius: 12px; 
+            border: 2px solid var(--neon-blue);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            margin: 10px 0; 
+            font-size: 20px; 
+            font-family: 'Bungee', cursive;
+            border-radius: 12px; 
+            border: none; 
+            background: var(--neon-pink); 
+            color: #fff; 
+            box-shadow: 0 0 15px var(--neon-pink);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        .vote-btn {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            margin-bottom: 15px;
+        }
+
+        h3 { font-family: 'Bungee', cursive; color: var(--neon-blue); margin-top: 0; }
+        p { font-size: 18px; line-height: 1.4; }
+
+        #game-screen { display: none; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="game-logo-mobile">Bluffi<br>& Fakta</div>
+
+    <div class="container" id="join-screen">
+        <input type="number" id="roomCode" placeholder="PIN-KOODI" pattern="\d*">
+        <input type="text" id="playerName" placeholder="NIMIMERKKI (max 10 merkkiä)" maxlength="10">
+        <button onclick="join()">LIITY PELIIN</button>
+    </div>
+
+    <div class="container" id="game-screen"></div>
+
+    <script src="app.js"></script>
+
+    <script>
+        // Rekisteröidään PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log("SW rekisteröity"));
+        }
+
+        function join() {
+            const roomCode = document.getElementById('roomCode').value;
+            const playerName = document.getElementById('playerName').value;
+            if(!roomCode || !playerName) return alert("Täytä molemmat kentät!");
+            socket.send(JSON.stringify({ type: 'JOIN_GAME', payload: { roomCode, playerName } }));
+        }
+
+        function sendAnswer() {
+            const ans = document.getElementById('ans').value;
+            if(!ans) return;
+            socket.send(JSON.stringify({ type: 'SUBMIT_ANSWER', payload: { answer: ans } }));
+            document.getElementById('game-screen').innerHTML = "<h3>VASTATTU!</h3><p>Odota, kunnes muut ovat valmiita...</p>";
+        }
+
+        function sendVote(v) {
+            socket.send(JSON.stringify({ type: 'SUBMIT_VOTE', payload: { vote: v } }));
+            document.getElementById('game-screen').innerHTML = "<h3>ÄÄNESTETTY!</h3><p>Katso TV-ruutua tuloksia varten!</p>";
+        }
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const screen = document.getElementById('game-screen');
+
+            if (data.type === 'JOIN_SUCCESS') {
+                document.getElementById('join-screen').style.display='none';
+                screen.style.display='block';
+                screen.innerHTML="<h3>OLET MUKANA!</h3><p>Peli alkaa pian. Ole valmiina!</p>";
+            }
+
+            if (data.type === 'ROLE_ASSIGNED') {
+                const isImpostor = data.payload.role === 'IMPOSTOR';
+                screen.innerHTML = `
+                    <h3>${isImpostor ? 'HUIJAA MUITA! 😈' : 'VASTAA OIKEIN! ✅'}</h3>
+                    <p>${data.payload.question}</p>
+                    <input type="text" id="ans" placeholder="Kirjoita vastaus (max 10m)..." maxlength="10">
+                    <button onclick="sendAnswer()">LÄHETÄ</button>
+                `;
+            }
+
+            if (data.type === 'START_VOTING') {
+                let html = "<h3>VALITSE OIKEA!</h3>";
+                data.payload.answers.forEach((ans, i) => {
+                    html += `<button class="vote-btn" onclick="sendVote('${ans}')">${ans}</button>`;
+                });
+                screen.innerHTML = html;
+            }
+        };
+    </script>
+</body>
+</html>

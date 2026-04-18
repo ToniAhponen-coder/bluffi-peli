@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bluffi & Fakta - THE SHOW</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff0055;
+            --neon-blue: #00d2ff;
+            --dark-bg: #0a0a1a;
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--dark-bg);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 0, 85, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(0, 210, 255, 0.15) 0%, transparent 40%);
+            color: white; 
+            text-align: center; 
+            padding: 20px; 
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* NEON LOGO */
+        .game-logo {
+            font-family: 'Bungee', cursive;
+            font-size: 80px;
+            margin: 40px 0;
+            text-transform: uppercase;
+            line-height: 0.9;
+            letter-spacing: 5px;
+            color: #fff;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px var(--neon-pink),
+                0 0 40px var(--neon-pink),
+                0 0 80px var(--neon-pink);
+            animation: flicker 2s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+            20%, 22%, 24%, 55% { opacity: 0.7; }
+        }
+
+        .pin-box { 
+            font-family: 'Bungee', cursive;
+            font-size: 100px; color: var(--neon-blue);
+            background: rgba(255, 255, 255, 0.05);
+            border: 4px solid var(--neon-blue);
+            display: inline-block; 
+            padding: 20px 60px; border-radius: 20px; 
+            box-shadow: 0 0 20px var(--neon-blue);
+            margin: 20px;
+        }
+
+        #player-list { list-style: none; padding: 0; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        
+        .player-card { 
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px; border-radius: 50px; 
+            font-size: 24px; font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+
+        .question-text {
+            font-family: 'Bungee', cursive;
+            font-size: 50px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue);
+            margin-bottom: 40px;
+        }
+
+        .answer-option { 
+            margin: 15px auto; padding: 25px; 
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px; width: 60%; font-size: 32px; 
+            border: 2px solid var(--neon-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
+            transition: 0.3s;
+        }
+
+        button { 
+            font-family: 'Bungee', cursive;
+            padding: 20px 40px; font-size: 30px; 
+            background: var(--neon-pink); color: white; 
+            border: none; border-radius: 15px; cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-pink);
+            transition: 0.2s;
+        }
+        button:hover { transform: scale(1.1); filter: brightness(1.2); }
+
+        /* FINAL PODIUM */
+        .podium-container {
+            display: flex; justify-content: center; align-items: flex-end;
+            gap: 20px; height: 400px; margin-top: 20px;
+        }
+        .podium-item {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .bar {
+            width: 200px; border-radius: 20px 20px 0 0;
+            display: flex; flex-direction: column; justify-content: center;
+            font-weight: bold; font-size: 28px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" loop src="background.mp3"></audio>
+    <audio id="winSound" src="win.mp3"></audio>
+
+    <div id="setup-area">
+        <div class="game-logo">Bluffi<br>& Fakta</div>
+        <p style="font-size: 20px; letter-spacing: 2px;">LIITY PELIIN PIN-KOODILLA</p>
+        <div id="room-code" class="pin-box">....</div>
+        <ul id="player-list"></ul>
+        <div style="margin-top: 40px;">
+            <button id="start-btn" onclick="startGame()" style="display:none;">ALOITA SHOW</button>
+        </div>
+    </div>
+
+    <div id="game-area" style="display:none; padding-top: 50px;"></div>
+
+    <script src="app.js"></script>
+
+    <script>
+        const bgMusic = document.getElementById('bgMusic');
+        const winSound = document.getElementById('winSound');
+
+        socket.onopen = () => socket.send(JSON.stringify({ type: 'CREATE_GAME' }));
+
+        function startGame() { 
+            bgMusic.volume = 0.4;
+            bgMusic.play().catch(() => console.log("Musiikki vaatii klikkauksen"));
+            socket.send(JSON.stringify({ type: 'START_GAME' })); 
+        }
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const gameArea = document.getElementById('game-area');
+
+            if (data.type === 'GAME_CREATED') document.getElementById('room-code').innerText = data.payload.roomCode;
+            
+            if (data.type === 'PLAYER_JOINED') {
+                const list = document.getElementById('player-list');
+                list.innerHTML = "";
+                data.payload.players.forEach(p => {
+                    const li = document.createElement('li'); 
+                    li.className='player-card'; li.innerText=p.name; 
+                    list.appendChild(li);
+                });
+                if(data.payload.players.length >= 1) document.getElementById('start-btn').style.display = 'inline-block';
+            }
+
+            if (data.type === 'GAME_STARTED') {
+                document.getElementById('setup-area').style.display = 'none';
+                gameArea.style.display = 'block';
+                gameArea.innerHTML = `
+                    <div class="question-text">${data.payload.question}</div>
+                    <div id="status-area" style="font-size: 24px; color: #fff; opacity: 0.7;">Vastatkaa puhelimillanne...</div>
+                    <div id="options-list"></div>
+                `;
+            }
+
+            if (data.type === 'PLAYER_SUBMITTED') {
+                const status = document.getElementById('status-area');
+                if (status) status.innerHTML += `<span style="color:var(--neon-blue); margin: 0 10px;">• ${data.payload.playerName} •</span>`;
+            }
+
+            if (data.type === 'SHOW_ANSWERS') {
+                const status = document.getElementById('status-area');
+                const list = document.getElementById('options-list');
+                status.innerHTML = "<h2 style='font-family:Bungee; color:var(--neon-pink)'>MIKÄ ON TOTTA? ÄÄNESTÄKÄÄ!</h2>";
+                list.innerHTML = "";
+                data.payload.answers.forEach((ans, i) => {
+                    const d = document.createElement('div'); 
+                    d.className='answer-option'; 
+                    d.style.animation = `pop 0.4s ease-out ${i*0.1}s both`;
+                    d.innerHTML = `${ans}`;
+                    list.appendChild(d);
+                });
+            }
+
+            if (data.type === 'GAME_RESULTS') {
+                let html = `<div class="question-text">OIKEA VASTAUS: <span style="color:#fff">${data.payload.correctAnswer}</span></div>`;
+                data.payload.results.forEach((res, i) => {
+                    const color = res.isCorrect ? 'var(--neon-blue)' : 'var(--neon-pink)';
+                    html += `
+                        <div class="player-card" style="margin:10px auto; width:70%; border-left:15px solid ${color}; display:flex; justify-content:space-between; border-radius: 10px; animation-delay:${i*0.2}s">
+                            <span>${res.name}</span>
+                            <span>+${res.roundPoints}p (Total: ${res.score})</span>
+                        </div>`;
+                });
+                html += `<div style="margin-top:30px;"><button onclick="startGame()">SEURAAVA KIERROS</button></div>`;
+                gameArea.innerHTML = html;
+            }
+
+            if (data.type === 'FINAL_RESULTS') {
+                bgMusic.pause();
+                winSound.play();
+                const w = data.payload.results;
+                let html = `<div class="game-logo" style="font-size:60px">VOITTAJA: ${w[0].name}</div>`;
+                html += `<div class="podium-container">`;
+                
+                // Podium järjestyksessä: 2. sija, 1. sija, 3. sija
+                const pos = [1, 0, 2];
+                pos.forEach(i => {
+                    if (w[i]) {
+                        const first = i === 0;
+                        html += `
+                        <div class="podium-item">
+                            <div style="font-size:40px; margin-bottom:10px;">${i===0?'🥇':i===1?'🥈':'🥉'}</div>
+                            <div class="bar" style="height:${first?250:150}px; background:${first?'var(--neon-pink)':'#1a1a3a'}; border: 3px solid ${first?'#fff':'var(--neon-blue)'}">
+                                ${w[i].name}<br><small>${w[i].score}p</small>
+                            </div>
+                        </div>`;
+                    }
+                });
+
+                html += `</div><button onclick="location.reload()" style="margin-top:40px;">LOPETA</button>`;
+                gameArea.innerHTML = html;
+            }
+        };
+    </script>
+</body>
+</html>
