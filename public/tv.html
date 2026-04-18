@@ -2,43 +2,29 @@
 <html lang="fi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bluffi & Fakta - TV</title>
+    <title>Bluffi & Fakta TV</title>
     <style>
         :root { --bg: #0d0118; --main: #00d4ff; --pink: #ff00e6; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
-        
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         header { flex: 0 0 auto; padding: 20px; text-align: center; }
-        h1 { font-size: 8vh; text-transform: uppercase; color: #fff; text-shadow: 0 0 20px var(--pink); }
-
+        h1 { font-size: 8vh; text-transform: uppercase; text-shadow: 0 0 20px var(--pink); }
         main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 0 5vw; }
         .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         .screen.active { display: flex; }
-
-        /* Asettelu: Ohjeet vasemmalla, Koodi oikealla */
-        .lobby-layout { display: flex; gap: 40px; width: 100%; align-items: center; }
+        .lobby-layout { display: flex; gap: 40px; width: 100%; }
         .guide-card { flex: 1.2; background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 3px solid var(--main); }
-        .code-card { flex: 1; text-align: center; }
-
-        #pin-display { font-size: 12vh; color: var(--main); text-shadow: 0 0 20px var(--main); margin: 10px 0; }
-
-        /* ALAOSA JA ALOITUSNAPPI */
-        footer { flex: 0 0 auto; min-height: 25vh; background: rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 3px solid var(--pink); padding: 20px; }
-        
-        #player-list { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 20px; }
+        #pin-display { font-size: 12vh; color: var(--main); text-shadow: 0 0 20px var(--main); }
+        footer { flex: 0 0 auto; min-height: 25vh; background: rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 3px solid var(--pink); }
+        #player-list { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
         .player-badge { background: rgba(0, 212, 255, 0.2); padding: 10px 25px; border-radius: 50px; border: 1px solid var(--main); font-size: 3vh; }
-
-        #start-btn { 
-            display: none; background: var(--pink); color: white; border: none; 
-            padding: 25px 80px; font-size: 6vh; border-radius: 100px; cursor: pointer;
-            box-shadow: 0 0 30px var(--pink); font-weight: bold; text-transform: uppercase;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); box-shadow: 0 0 50px var(--pink); } 100% { transform: scale(1); } }
+        #start-btn { display: none; background: var(--pink); color: white; border: none; padding: 25px 80px; font-size: 6vh; border-radius: 100px; cursor: pointer; box-shadow: 0 0 30px var(--pink); font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
+    <audio id="bg-music" src="background.mp3" loop></audio>
+    <audio id="win-sound" src="win.mp3"></audio>
 
     <header><h1>BLUFFI & FAKTA</h1></header>
 
@@ -46,18 +32,16 @@
         <div id="lobby-screen" class="screen active">
             <div class="lobby-layout">
                 <div class="guide-card">
-                    <h2 style="color: var(--main); font-size: 5vh; margin-bottom: 20px;">NÄIN PELATAAN:</h2>
-                    <ul style="font-size: 3.5vh; list-style: none; line-height: 1.4;">
+                    <h2 style="color: var(--main); font-size: 5vh;">OHJEET:</h2>
+                    <ul style="font-size: 3.5vh; list-style: none; line-height: 1.5;">
                         <li>📱 1. Ota puhelimesi käteen</li>
                         <li>🌐 2. Mene: <strong>bluffi-peli.onrender.com</strong></li>
                         <li>🔑 3. Syötä PIN-koodi ja nimesi</li>
-                        <li>🤥 4. Keksi valheita ja voita!</li>
                     </ul>
                 </div>
-                <div class="code-card">
-                    <p style="font-size: 4vh;">LIITY PIN-KOODILLA:</p>
+                <div style="flex: 1; text-align: center;">
+                    <p style="font-size: 4vh;">PIN-KOODI:</p>
                     <div id="pin-display">----</div>
-                    <p style="font-size: 3vh; color: #aaa;">Odotetaan pelaajia...</p>
                 </div>
             </div>
         </div>
@@ -67,13 +51,13 @@
         </div>
 
         <div id="voting-screen" class="screen">
-            <h2 style="font-size: 6vh; margin-bottom: 30px;">VALITSE OIKEA!</h2>
+            <h2 style="font-size: 6vh; margin-bottom: 30px;">MIKÄ ON TOTTA?</h2>
             <div id="options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 90%;"></div>
         </div>
 
         <div id="results-screen" class="screen">
-            <h2 id="answer-reveal" style="font-size: 5vh; color: #00ff88;"></h2>
-            <div id="score-table" style="margin-top: 30px; font-size: 4vh; width: 100%;"></div>
+            <h2 id="reveal-text" style="font-size: 5vh; color: #00ff88;"></h2>
+            <div id="score-table" style="margin-top: 30px; font-size: 4vh;"></div>
         </div>
     </main>
 
@@ -85,16 +69,14 @@
     <script>
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const ws = new WebSocket(`${protocol}://${window.location.host}`);
+        const bgMusic = document.getElementById('bg-music');
+        const winSound = document.getElementById('win-sound');
 
         ws.onopen = () => ws.send(JSON.stringify({ type: 'CREATE_GAME' }));
 
         ws.onmessage = (event) => {
             const { type, payload } = JSON.parse(event.data);
-            
-            if (type === 'GAME_CREATED') {
-                document.getElementById('pin-display').innerText = payload.roomCode;
-            }
-            
+            if (type === 'GAME_CREATED') document.getElementById('pin-display').innerText = payload.roomCode;
             if (type === 'PLAYER_JOINED') {
                 const list = document.getElementById('player-list');
                 list.innerHTML = '';
@@ -104,17 +86,12 @@
                     div.innerText = p.name;
                     list.appendChild(div);
                 });
-                // Nappi näkyviin heti kun vähintään 1 pelaaja on mukana
-                if (payload.players.length >= 1) {
-                    document.getElementById('start-btn').style.display = 'block';
-                }
+                if (payload.players.length >= 1) document.getElementById('start-btn').style.display = 'block';
             }
-
             if (type === 'GAME_STARTED') {
                 showScreen('game-screen');
                 document.getElementById('q-text').innerText = payload.question;
             }
-
             if (type === 'SHOW_ANSWERS') {
                 showScreen('voting-screen');
                 const grid = document.getElementById('options-grid');
@@ -124,22 +101,20 @@
                     d.style.background = "rgba(255,255,255,0.1)";
                     d.style.padding = "30px";
                     d.style.borderRadius = "15px";
-                    d.style.fontSize = "3.5vh";
                     d.innerText = a;
                     grid.appendChild(d);
                 });
             }
-
             if (type === 'GAME_RESULTS') {
                 showScreen('results-screen');
-                document.getElementById('answer-reveal').innerText = "OIKEA VASTAUS: " + payload.correctAnswer;
-                const sb = document.getElementById('score-table');
-                sb.innerHTML = '<h3>TILANNE:</h3>' + 
-                    payload.results.map(r => `<p>${r.name}: ${r.score} pistettä</p>`).join('');
+                document.getElementById('reveal-text').innerText = "OIKEA: " + payload.correctAnswer;
+                winSound.play().catch(e => {});
+                document.getElementById('score-table').innerHTML = payload.results.map(r => `<p>${r.name}: ${r.score}p</p>`).join('');
             }
         };
 
         document.getElementById('start-btn').onclick = () => {
+            bgMusic.play().catch(e => {});
             ws.send(JSON.stringify({ type: 'START_GAME' }));
             document.getElementById('start-btn').style.display = 'none';
         };
