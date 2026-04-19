@@ -52,17 +52,26 @@
         document.getElementById('join-btn').onclick = () => {
             const room = document.getElementById('room-input').value;
             const name = safe(document.getElementById('name-input').value);
-            if(room && name) ws.send(JSON.stringify({ type: 'JOIN_GAME', payload: { roomCode: room, name: name } }));
+            // KORJAUS 1: Lähetetään nimi muodossa "playerName", jotta server.js ymmärtää sen
+            if(room && name) {
+                ws.send(JSON.stringify({ type: 'JOIN_GAME', payload: { roomCode: room, playerName: name } }));
+            } else {
+                document.getElementById('join-error').innerText = "Täytä koodi ja nimi!";
+            }
         };
 
         ws.onmessage = (event) => {
             const { type, payload } = JSON.parse(event.data);
             if (type === 'JOIN_SUCCESS') showScreen('wait-screen');
             if (type === 'ERROR') document.getElementById('join-error').innerText = payload;
-            if (type === 'GAME_STARTED') {
+            
+            // KORJAUS 2: Puhelin kuuntelee "ROLE_ASSIGNED" viestiä, ei "GAME_STARTED"
+            if (type === 'ROLE_ASSIGNED') {
                 showScreen('game-screen');
                 document.getElementById('question-text').innerText = payload.question;
+                document.getElementById('answer-input').value = ''; // Tyhjennetään samalla vanha vastaus!
             }
+            
             if (type === 'SHOW_ANSWERS') {
                 showScreen('voting-screen');
                 const list = document.getElementById('options-list');
