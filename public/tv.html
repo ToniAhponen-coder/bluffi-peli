@@ -114,6 +114,16 @@
             if (type === 'GAME_STARTED') {
                 showScreen('game-screen');
                 document.getElementById('q-text').innerText = payload.question;
+
+                if (type === 'PLAYER_SUBMITTED') {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble-pop';
+    bubble.innerText = `💭 ${payload.playerName} vastasi!`;
+    document.body.appendChild(bubble);
+    
+    // Poistetaan elementti DOMista animaation jälkeen, ettei selain tukkeudu
+    setTimeout(() => bubble.remove(), 3000); 
+}
             }
             if (type === 'SHOW_ANSWERS') {
                 showScreen('voting-screen');
