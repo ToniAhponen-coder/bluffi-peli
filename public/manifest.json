@@ -1,7 +1,7 @@
 {
   "name": "Bluffi & Fakta",
   "short_name": "Bluffi",
-  "start_url": "/index.html",
+  "start_url": "/pelaaja.html",
   "display": "standalone",
   "background_color": "#0a0a1a",
   "theme_color": "#ff0055",
