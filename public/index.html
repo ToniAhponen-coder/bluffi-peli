@@ -105,7 +105,7 @@
     document.getElementById('pin-display').innerText = payload.roomCode;
     
     // Luodaan osoite, jossa on huonekoodi mukana
-    const joinUrl = `https://bluffi-peli.onrender.com/?room=${payload.roomCode}`;
+    const joinUrl = `https://bluffi-peli.onrender.com/pelaaja.html?room=${payload.roomCode}`;
     
     // Generoidaan QR-koodi
     document.getElementById("qr-container").innerHTML = ""; 
