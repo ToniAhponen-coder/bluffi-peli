@@ -545,29 +545,32 @@ ws.on('close', () => {
             type: 'PLAYER_JOINED',
             payload: { players: game.players.map(p => ({ name: p.name })) }
           });
-        } else {
-          // Jos peli on JO käynnissä, syötetään automaattivastaus, jotta peli ei jumiudu
+       } else {
+          // Jos peli on JO käynnissä, käsitellään putoaminen
           const p = game.players.find(x => x.id === ws.playerId);
-          if (p && !p.answer) {
-            p.answer = "-Luovutti-";
-            game.current.answers.push(p.answer);
-            
-            // Tarkistetaan, oliko tämä viimeinen puuttuva vastaus
-            if (game.current.answers.length === game.players.length) {
-              let votingOptions = [...game.current.answers, game.current.question.a];
-              votingOptions.sort(() => Math.random() - 0.5); // Sekoitetaan
-
-              safeSend(game.host, {
-                type: 'SHOW_ANSWERS',
-                payload: { answers: votingOptions }
-              });
-
-              game.players.forEach(pl => {
-                safeSend(pl.ws, {
-                  type: 'START_VOTING',
-                  payload: { answers: votingOptions }
+          if (p) {
+            if (!p.answer) {
+              // 1. Putoaminen vastausvaiheessa
+              p.answer = "-Luovutti-";
+              game.current.answers.push(p.answer);
+              
+              if (game.current.answers.length === game.players.length) {
+                let votingOptions = [...game.current.answers, game.current.question.a];
+                votingOptions.sort(() => Math.random() - 0.5);
+                
+                safeSend(game.host, { type: 'SHOW_ANSWERS', payload: { answers: votingOptions } });
+                game.players.forEach(pl => {
+                  safeSend(pl.ws, { type: 'START_VOTING', payload: { answers: votingOptions } });
                 });
-              });
+              }
+            } else if (p.answer && !p.vote) {
+              // 2. Putoaminen äänestysvaiheessa (TÄMÄ KORJAA JUMIUTUMISEN)
+              p.vote = "-Luovutti-"; // Annetaan tyhjä ääni, jotta peli pääsee eteenpäin
+              
+              // Tarkistetaan, oliko tämä viimeinen puuttuva ääni
+              if (game.players.every(pl => pl.vote)) {
+                endRound(game);
+              }
             }
           }
         }
