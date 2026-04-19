@@ -52,6 +52,17 @@
         const ws = new WebSocket(`${protocol}://${window.location.host}`);
         const safe = (str) => str.replace(/[^a-zA-Z0-9åäöÅÄÖ!?,. ]/g, "").trim();
 
+        window.onload = () => {
+    // Luetaan URL:n parametrit (esim. ?room=1234)
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomFromUrl = urlParams.get('room');
+    if (roomFromUrl) {
+        document.getElementById('room-input').value = roomFromUrl;
+        // Siirretään fokus suoraan nimimerkkiin!
+        document.getElementById('name-input').focus();
+    }
+};
+
         document.getElementById('join-btn').onclick = () => {
             const room = document.getElementById('room-input').value;
             const name = safe(document.getElementById('name-input').value);
