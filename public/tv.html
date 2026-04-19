@@ -6,6 +6,7 @@
 <link rel="icon" type="image/png" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <title>Bluffi & Fakta TV</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --bg: #0d0118; --main: #00d4ff; --pink: #ff00e6; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -65,6 +66,7 @@
                     <p style="font-size: 3.5vh; color: var(--main); font-weight: bold;">bluffi-peli.onrender.com</p>
                     <p style="font-size: 4vh; margin-top: 30px;">PIN-KOODI:</p>
                     <div id="pin-display">----</div>
+                    <div id="qr-container" style="background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-top: 20px;"></div>
                 </div>
             </div>
         </div>
@@ -99,7 +101,23 @@
 
         ws.onmessage = (event) => {
             const { type, payload } = JSON.parse(event.data);
-            if (type === 'GAME_CREATED') document.getElementById('pin-display').innerText = payload.roomCode;
+            if (type === 'GAME_CREATED') {
+    document.getElementById('pin-display').innerText = payload.roomCode;
+    
+    // Luodaan osoite, jossa on huonekoodi mukana
+    const joinUrl = `https://bluffi-peli.onrender.com/?room=${payload.roomCode}`;
+    
+    // Generoidaan QR-koodi
+    document.getElementById("qr-container").innerHTML = ""; 
+    new QRCode(document.getElementById("qr-container"), {
+        text: joinUrl,
+        width: 180,
+        height: 180,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+}
             if (type === 'PLAYER_JOINED') {
                 const list = document.getElementById('player-list');
                 list.innerHTML = '';
