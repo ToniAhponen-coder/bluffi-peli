@@ -110,7 +110,15 @@
             if (type === 'GAME_RESULTS') {
                 showScreen('results-screen');
                 document.getElementById('reveal-text').innerText = "OIKEA VASTAUS: " + payload.correctAnswer;
-                winSound.play().catch(e => {});
+                // Musiikki on poistettu täältä
+                document.getElementById('score-table').innerHTML = payload.results.map(r => `<p>${r.name}: ${r.score}p</p>`).join('');
+            }
+            
+            // LISÄTTY: Kuunnellaan pelin päätöstä, jolloin musiikki soitetaan
+            if (type === 'FINAL_RESULTS') {
+                showScreen('results-screen');
+                document.getElementById('reveal-text').innerText = "🏆 PELI PÄÄTTYI! 🏆";
+                winSound.play().catch(e => {}); // Musiikki soi vasta täällä
                 document.getElementById('score-table').innerHTML = payload.results.map(r => `<p>${r.name}: ${r.score}p</p>`).join('');
             }
         };
