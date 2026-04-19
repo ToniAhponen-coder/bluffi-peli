@@ -486,7 +486,7 @@ wss.on('connection', (ws, req) => {
       const p = game.players.find(x => x.id === ws.playerId);
       if (!p || p.answer) return;
 
-      p.answer = sanitize(payload.answer, 10);
+      p.answer = sanitize(payload.answer, 30);
       game.current.answers.push(p.answer);
 
       // TÄMÄ RIVI PUUTTUI! Ilmoittaa TV-ruudulle, kuka vastasi:
