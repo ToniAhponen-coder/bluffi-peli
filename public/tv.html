@@ -12,9 +12,9 @@
         main { flex: 1; display: flex; justify-content: center; align-items: center; padding: 0 5vw; }
         .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         .screen.active { display: flex; }
-        .lobby-layout { display: flex; gap: 40px; width: 100%; }
-        .guide-card { flex: 1.2; background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 3px solid var(--main); }
-        #pin-display { font-size: 12vh; color: var(--main); text-shadow: 0 0 20px var(--main); }
+        .lobby-layout { display: flex; gap: 40px; width: 100%; align-items: center; }
+        .guide-card { flex: 1.2; background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px; border: 3px solid var(--main); text-align: left; }
+        #pin-display { font-size: 12vh; color: var(--main); text-shadow: 0 0 20px var(--main); margin-top: 10px; }
         footer { flex: 0 0 auto; min-height: 25vh; background: rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 3px solid var(--pink); }
         #player-list { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
         .player-badge { background: rgba(0, 212, 255, 0.2); padding: 10px 25px; border-radius: 50px; border: 1px solid var(--main); font-size: 3vh; }
@@ -32,15 +32,17 @@
         <div id="lobby-screen" class="screen active">
             <div class="lobby-layout">
                 <div class="guide-card">
-                    <h2 style="color: var(--main); font-size: 5vh;">OHJEET:</h2>
-                    <ul style="font-size: 3.5vh; list-style: none; line-height: 1.5;">
-                        <li>📱 1. Ota puhelimesi käteen</li>
-                        <li>🌐 2. Mene: <strong>bluffi-peli.onrender.com</strong></li>
-                        <li>🔑 3. Syötä PIN-koodi ja nimesi</li>
+                    <h2 style="color: var(--main); font-size: 5vh; margin-bottom: 20px;">PELIN IDEA JA KULKU:</h2>
+                    <ul style="font-size: 3vh; list-style: none; line-height: 1.6;">
+                        <li>🤥 <strong>1. Keksi valhe:</strong> Yritä huijata muita uskottavalla vastauksella.</li>
+                        <li>🗳️ <strong>2. Äänestä:</strong> Etsi oikea fakta kaikkien valheiden joukosta.</li>
+                        <li>🏆 <strong>3. Pisteet:</strong> Saat pisteitä arvaamalla oikein TAI huijaamalla muita!</li>
                     </ul>
                 </div>
                 <div style="flex: 1; text-align: center;">
-                    <p style="font-size: 4vh;">PIN-KOODI:</p>
+                    <p style="font-size: 3vh;">Mene puhelimella osoitteeseen:</p>
+                    <p style="font-size: 3.5vh; color: var(--main); font-weight: bold;">bluffi-peli.onrender.com</p>
+                    <p style="font-size: 4vh; margin-top: 30px;">PIN-KOODI:</p>
                     <div id="pin-display">----</div>
                 </div>
             </div>
@@ -107,7 +109,7 @@
             }
             if (type === 'GAME_RESULTS') {
                 showScreen('results-screen');
-                document.getElementById('reveal-text').innerText = "OIKEA: " + payload.correctAnswer;
+                document.getElementById('reveal-text').innerText = "OIKEA VASTAUS: " + payload.correctAnswer;
                 winSound.play().catch(e => {});
                 document.getElementById('score-table').innerHTML = payload.results.map(r => `<p>${r.name}: ${r.score}p</p>`).join('');
             }
