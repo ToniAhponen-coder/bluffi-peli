@@ -23,6 +23,24 @@
         .player-badge { background: rgba(0, 212, 255, 0.2); padding: 10px 25px; border-radius: 50px; border: 1px solid var(--main); font-size: 3vh; }
         #start-btn { display: none; background: var(--pink); color: white; border: none; padding: 25px 80px; font-size: 6vh; border-radius: 100px; cursor: pointer; box-shadow: 0 0 30px var(--pink); font-weight: bold; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        .bubble-pop {
+    position: fixed;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--pink);
+    color: white;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 3.5vh;
+    font-weight: bold;
+    box-shadow: 0 0 20px var(--pink);
+    z-index: 100;
+    pointer-events: none;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.4s ease-in 2.5s forwards;
+}
+@keyframes popIn { 0% { transform: translate(-50%, 50px) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+@keyframes fadeOut { to { opacity: 0; transform: translate(-50%, -20px); visibility: hidden; } }
     </style>
 </head>
 <body>
